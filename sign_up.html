@@ -12,46 +12,53 @@
     <button type="button" id="hide" style="width: 100px; height: 50px;">숨기기</button>
     <button type="button" id="show" style="width: 100px; height: 50px;" hidden>보이기</button>
 
-    <form action="" accept-charset="UTF-8" id="signup_form" name="signup" method="post" onsubmit="return check()">
-        <br>
-        <fieldset style="width: 500px;">
-            <legend>회원가입</legend><br>
-            이름: <input type="text" class="user" id="username" name="username" value="" size="20" required /><br>
-            아이디: <input type="text" class="user" id="userid" name="userid" value="" size="20" required /><br>
-            비밀번호: <input type="password" class="user" id="userpw" name="userpw" id="userpw" value="" size="20"
-                required /><br>
-            비밀번호 확인: <input type="password" class="user" id="userpwc" name="userpwc" id="userpwc" value="" size="20"
-                required />
-            <button id="pwc_btn" type="button">확인</button><br>
-            이메일: <input type="email" class="user" id="useremail" name="useremail" value="" size="20" required /><br>
-            기타: <br>
-            <textarea class="user" id="textView" style="width:300px; height:100px; border:solid 1px"
-                oncopy="return false" oncut="return false" onpaste="return false" required></textarea><br>
+    <div id="signup_all">
+        <form action="" accept-charset="UTF-8" id="signup_form" name="signup" method="post" onsubmit="return check()">
+            <br>
+            <fieldset style="width: 500px;">
+                <legend>회원가입</legend><br>
+                이름: <input type="text" class="user" id="username" name="username" value="" size="20" required /><br>
+                아이디: <input type="text" class="user" id="userid" name="userid" value="" size="20" required /><br>
+                비밀번호: <input type="password" class="user" id="userpw" name="userpw" id="userpw" value="" size="20"
+                    required /><br>
+                비밀번호 확인: <input type="password" class="user" id="userpwc" name="userpwc" id="userpwc" value="" size="20"
+                    required />
+                <button id="pwc_btn" type="button">확인</button><br>
+                이메일: <input type="email" class="user" id="useremail" name="useremail" value="" size="20" required /><br>
+                기타: <br>
+                <textarea class="user" id="textView" style="width:300px; height:100px; border:solid 1px"
+                    oncopy="return false" oncut="return false" onpaste="return false"></textarea><br>
 
-            <input type="submit" id="submit_btn" value="가입하기" />
-            <input type="reset" value="초기화" />
-        </fieldset>
-    </form><br>
-    <div id="user_inform" hidden>
-        <table border="1" width="400px">
-            <th width="20%">요소</th>
-            <th width="80%">가입정보</th>
-            <tr>
-                <td>이름</td><td id="tdname"></td>
-            </tr>
-            <tr>
-                <td>아이디</td><td id="tdid"></td>
-            </tr>
-            <tr>
-                <td>비밀번호</td><td id="tdpw"></td>
-            </tr>
-            <tr>
-                <td>이메일</td><td id="tdmail"></td>
-            </tr>
-            <tr>
-                <td>기타</td><td id="tdtext"></td>
-            </tr>
-        </table>
+                <input type="submit" id="submit_btn" value="가입하기" />
+                <input type="reset" value="초기화" />
+            </fieldset>
+        </form><br>
+        <div id="user_inform" hidden>
+            <table border="1" width="400px">
+                <th width="20%">요소</th>
+                <th width="80%">가입정보</th>
+                <tr>
+                    <td>이름</td>
+                    <td id="tdname"></td>
+                </tr>
+                <tr>
+                    <td>아이디</td>
+                    <td id="tdid"></td>
+                </tr>
+                <tr>
+                    <td>비밀번호</td>
+                    <td id="tdpw"></td>
+                </tr>
+                <tr>
+                    <td>이메일</td>
+                    <td id="tdmail"></td>
+                </tr>
+                <tr>
+                    <td>기타</td>
+                    <td id="tdtext"></td>
+                </tr>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -77,27 +84,35 @@
                 alert("잘라내기 금지");
             });
             $("#hide").click(function () {
-                $('#signup_form').hide();
+                $('#signup_all').hide();
                 $(this).hide();
                 $("#show").show();
             });
             $("#show").click(function () {
-                $('#signup_form').show();
+                $('#signup_all').show();
                 $(this).hide();
                 $("#hide").show();
+            });
+            $("#useremail").change(function () {
+                var umail = $(this).val();
+                mail_check(umail);
+
             });
         });
         function check() {
             var upw = $("#userpw").val();
             var upwc = $('#userpwc').val();
-            if (upw !== upwc) {
+            var umail = mail_check($("#useremail").val());
+            
+            if (upw != upwc) {
                 $("#user_inform").hide();
-                alert("비밀번호가 일치하지 않습니다");
+                alert("비밀번호를 확인해주세요");
                 return false;
-            } else {
+            } else if(!umail){
+                return false;
+            }else {
                 return submit_success();
             }
-            $("#user_inform").hide();
             return false;
         }
         function submit_success() {
@@ -106,8 +121,22 @@
             $("#tdid").text($("#userid").val());
             $("#tdpw").text($("#userpw").val());
             $("#tdmail").text($("#useremail").val());
-            $("#tdtext").text($("#textView").val());
+            if ($("#textView").val() == '') {
+                $("#tdtext").text("-");
+            } else {
+                $("#tdtext").text($("#textView").val());
+            }
+
             return false;
+        }
+        function mail_check(umail) {
+            var phoneNumberRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i;
+            if (!phoneNumberRegex.test(umail)) {
+                alert("이메일 형식을 다시 확인하세요");
+                return false;
+            } else {
+                return true;
+            }
         }
     </script>
 </body>
