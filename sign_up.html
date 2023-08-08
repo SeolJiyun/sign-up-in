@@ -63,21 +63,22 @@
 
     <script>
         $(document).ready(function () {
+
+            //비밀번호 확인 버튼 눌렀을 때
             $("#pwc_btn").click(function () {
-                var upw = $("#userpw").val();
-                var upwc = $('#userpwc').val();
-                if(upw==''){
+                var pwck = pw_check();
+                if (pwck == "enterPW") {
                     alert("비밀번호를 입력하세요");
-                } else if(upwc==''){
+                } else if (pwck == "enterPWC") {
                     alert("비밀번호 확인란을 입력하세요");
-                } else if (upw !== upwc) {
+                } else if (pwck == "notMatch") {
                     alert("비밀번호가 일치하지 않습니다");
-                    return false;
-                } else {
+                } else if (pwck == true) {
                     alert("비밀번호가 일치합니다");
-                    return true;
                 }
             });
+
+            //기타란 복붙금지
             $("#textView").bind('paste', function (e) {
                 alert("붙여넣기 금지");
             });
@@ -87,38 +88,54 @@
             $("#textView").bind('cut', function (e) {
                 alert("잘라내기 금지");
             });
+
+            // 숨기기 버튼
             $("#hide").click(function () {
                 $('#signup_all').hide();
                 $(this).hide();
                 $("#show").show();
+                $("#signup_form").each(function () {
+                    this.reset();
+                });
             });
+
+            // 보이기 버튼
             $("#show").click(function () {
                 $('#signup_all').show();
                 $(this).hide();
                 $("#hide").show();
             });
+            
+            //메일 확인
             $("#useremail").change(function () {
                 var umail = $(this).val();
                 mail_check(umail);
 
             });
         });
+
+        // 함수
+        ////////////////////////////////////////////
+        // 가입하기 버튼 눌렀을 때, form 체크하는 함수
         function check() {
-            var upw = $("#userpw").val();
-            var upwc = $('#userpwc').val();
+
             var umail = mail_check($("#useremail").val());
-            
-            if (upw != upwc) {
+
+            if (pw_check() != true) {
                 $("#user_inform").hide();
-                alert("비밀번호를 확인해주세요");
+                setTimeout(function () {
+                    alert("비밀번호를 확인하세요");
+                }, 500);
                 return false;
-            } else if(!umail){
+            } else if (!umail) {
                 return false;
-            }else {
+            } else {
                 return submit_success();
             }
             return false;
         }
+
+        // 가입성공 시 테이블 출력
         function submit_success() {
             $("#user_inform").show();
             $("#tdname").text($("#username").val());
@@ -130,14 +147,33 @@
             } else {
                 $("#tdtext").text($("#textView").val());
             }
-
+            $("#signup_form").each(function () {
+                this.reset();
+            });
             return false;
         }
+
+        // 메일 정규식 확인
         function mail_check(umail) {
             var phoneNumberRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i;
             if (!phoneNumberRegex.test(umail)) {
                 alert("이메일 형식을 다시 확인하세요");
                 return false;
+            } else {
+                return true;
+            }
+        }
+
+        // 비밀번호 확인 함수
+        function pw_check() {
+            var upw = $("#userpw").val();
+            var upwc = $('#userpwc').val();
+            if (upw == '') {
+                return "enterPW";
+            } else if (upwc == '') {
+                return "enterPWC";
+            } else if (upw !== upwc) {
+                return "notMatch";
             } else {
                 return true;
             }
