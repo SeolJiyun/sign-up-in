@@ -6,14 +6,26 @@
     <title>Sign up</title>
     <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
 </head>
-<link rel="stylesheet" href="sign_up.css">
+
+<style>
+    input:focus {
+        outline: none;
+    }
+
+    span {
+        color: red;
+    }
+</style>
 
 <body>
     <div id="all">
+        <!-- 숨기기, 보이기 버튼 -->
         <div id="hide_show">
             <button type="button" id="hide" style="width: 100px; height: 50px;">숨기기</button>
             <button type="button" id="show" style="width: 100px; height: 50px;" hidden>보이기</button>
         </div>
+
+        <!-- 회원가입 폼 -->
         <div id="signup_all">
             <form action="" accept-charset="UTF-8" id="signup_form" name="signup" method="post"
                 onsubmit="return check()">
@@ -21,38 +33,41 @@
                 <fieldset style="width: 400px;">
                     <h1>회원가입</h1>
                     <div id="name">
-                        이름<span></span><br>
-                        <input type="text" class="user" id="username" name="username" value="" size="20" /><br>
+                        * 이름 <span></span><br>
+                        <input type="text" class="user" id="username" name="username" value="" size="20" required /><br>
                     </div>
                     <div id="id">
-                        아이디<span></span><br>
-                        <input type="text" class="user" id="userid" name="userid" value="" size="20" /><br>
+                        * 아이디 <span></span><br>
+                        <input type="text" class="user" id="userid" name="userid" value="" size="20" required /><br>
                     </div>
                     <div id="pw">
-                        비밀번호<span></span><br>
-                        <input type="password" class="user" id="userpw" name="userpw" id="userpw" value=""
-                            size="20" /><br>
+                        * 비밀번호 <span></span><br>
+                        <input type="password" class="user" id="userpw" name="userpw" id="userpw" value="" size="20"
+                            required /><br>
                     </div>
                     <div id="pwc">
-                        비밀번호 확인<span></span><br>
-                        <input type="password" class="user" id="userpwc" name="userpwc" id="userpwc" value=""
-                            size="20" />
+                        * 비밀번호 확인 <span></span><br>
+                        <input type="password" class="user" id="userpwc" name="userpwc" id="userpwc" value="" size="20"
+                            required />
                         <button id="pwc_btn" type="button">확인</button><br>
                     </div>
                     <div id="mail">
-                        이메일<span></span><br>
-                        <input type="email" class="user" id="useremail" name="useremail" value="" size="20" /><br>
+                        * 이메일 <span></span><br>
+                        <input type="email" class="user" id="useremail" name="useremail" value="" size="20"
+                            required /><br>
                     </div>
-                    기타<br>
+                    기타 (선택)<br>
                     <textarea class="user" id="textView" style="width:300px; height:100px; border:solid 1px"
                         oncopy="return false" oncut="return false" onpaste="return false"></textarea><br>
                     <div>
                         <input type="submit" id="submit_btn" value="가입하기" />
-                        <input type="reset" value="초기화" />
+                        <input type="reset" id="reset_btn" value="초기화" />
                     </div>
         </div>
         </fieldset>
         </form><br>
+
+        <!-- 결과 출력 -->
         <div id="user_inform" hidden>
             <table border="1" width="400px">
                 <th width="20%">요소</th>
@@ -84,30 +99,16 @@
 
     <script>
         $(document).ready(function () {
-            
+
             //비밀번호 확인 버튼 눌렀을 때
             $("#pwc_btn").click(function () {
-                var pwck = pw_check();
-                if (pwck == "enterPW") {
-                    alert("비밀번호를 입력하세요");
-                    $(("#userpw")).parent().find('span').text("필수입력사항 입니다");
-                    red_input("#userpw");
-                } else if (pwck == "enterPWC") {
-                    alert("비밀번호 확인란을 입력하세요");
-                    $(("#userpwc")).parent().find('span').text("필수입력사항 입니다");
-                    red_input("#userpwc");
-                } else if (pwck == "notMatch") {
-                    alert("비밀번호가 일치하지 않습니다");
-                    red_input("#userpw");
-                    red_input("#userpwc");
-                    $(("#userpwc")).parent().find('span').text("비밀번호가 일치하지 않습니다");
-                } else if (pwck == true) {
-                    alert("비밀번호 일치");
-                    green_input("#userpw");
-                    green_input("#userpwc");
-                    $(("#userpw")).parent().find('span').text("");
-                    $(("#userpwc")).parent().find('span').text("");
-                }
+                pw_btn_check();
+            });
+            $("#userpwc").change(function () {
+                pw_btn_check();
+            });
+            $("#userpw").change(function () {
+                pw_btn_check();
             });
 
             //기타란 복붙금지
@@ -129,6 +130,9 @@
                 $("#signup_form").each(function () {
                     this.reset();
                 });
+                $("#signup_all").find('input').removeAttr("style");
+                $("#signup_all").find('span').text("");
+                $("#user_inform").hide();
             });
 
             // 보이기 버튼
@@ -142,64 +146,52 @@
             $("#useremail").change(function () {
                 var umail = $(this).val();
                 mail_check(umail);
-
             });
 
             //input 클릭했을 때
             $("input").focus(function () {
                 var it = $(this);
-                empty_x(it);
+                if (it.attr('id') != 'submit_btn' && it.attr('id') != 'reset_btn') {
+                    it.val("");
+                    empty_x(it);
+                }
             });
 
             //input에 값을 넣고있을 때 필수입력사항체크
-            $("input").keydown(function () {
+            $("input").keyup(function () {
                 var it = $(this);
                 empty_x(it);
             });
+
+            //초기화 버튼 눌렸을 때
+            $("#reset_btn").click(function () {
+                $("#signup_all").find('input').removeAttr("style");
+                $("#signup_all").find('span').text("");
+                $("#signup_all").find('input').blur();
+            })
         });
 
-        // 함수
-        ////////////////////////////////////////////
-        
-        // // 가입하기 버튼 눌렀을 때, form 체크하는 함수
-        // function check() {
-        //     var uname = $("#username").val();
-        //     var uid = $("#userid").val();
-        //     var upw = $("#userpw").val();
-        //     var upwc = $("#userpwc").val();
-        //     var umail = $("#useremail").val();
-        //     var umailc = mail_check(umail);
-        //     var ipip = $("input");
 
-        //     if (ipip.val() == "") {
-        //         ipip.focus();
-        //         return false;
-        //     } else if (uid == "") {
-        //         $("#id").find('span').text("아이디를 입력하십시오.");
-        //     } else if (pw_check() != true) {
-        //         $("#user_inform").hide();
-        //         setTimeout(function () {
-        //             $("#pw").find('span').text("비밀번호를 확인하세요");
-        //         }, 500);
-        //         return false;
-        //     } else if (!umailc) {
-        //         return false;
-        //     } else {
-        //         return submit_success();
-        //     }
-        //     return false;
-        // }
+        // 함수////////////////////////////////////////////
+
+        //가입하기 버튼 눌렀을 때, form 최종확인하는 함수
         function check() {
-            var x = 1;
-            $(".user").each(function(){
-               if($("#"+$(this).attr('id')).val()== ''){
-                alert("빈값");
-                return false;
-               }
-            });
-            
+            if (window.confirm('회원가입 폼을 제출하시겠습니까? 작성된 내용은 제출 후 초기화됩니다.')) {
+                if (pw_check() != true) {
+                    alert("비밀번호를 확인하세요")
+                    $("#pwc_btn").click();
+                    return false;
+                } else if (mail_check($("#useremail").val()) != true) {
+                    alert("이메일 형식을 확인하세요")
+                    return false;
+                } else {
+                    submit_success();
+                    return false;
+                }
 
-            
+            }
+            return false;
+
         }
 
         // 가입성공 시 테이블 출력
@@ -214,10 +206,7 @@
             } else {
                 $("#tdtext").text($("#textView").val());
             }
-            $("#signup_form").each(function () {
-                this.reset();
-            });
-            return false;
+            $("#reset_btn").click();
         }
 
         // 메일 정규식 확인
@@ -249,18 +238,43 @@
             }
         }
 
+        // 비밀번호 확인 버튼 눌렀을 때
+        function pw_btn_check() {
+            var pwck = pw_check();
+            if (pwck == "enterPW") {
+                red_input("#userpw");
+                $("#userpw").focus();
+            } else if (pwck == "enterPWC") {
+                red_input("#userpwc");
+                $("#userpwc").focus();
+            } else if (pwck == "notMatch") {
+                red_input("#userpw");
+                red_input("#userpwc");
+                $("#userpw").focus();
+                $(("#userpwc")).parent().find('span').text("비밀번호가 일치하지 않습니다").css("color", "red");
+            } else if (pwck == true) {
+                green_input("#userpw");
+                green_input("#userpwc");
+                $(("#userpw")).parent().find('span').text("");
+                $(("#userpwc")).parent().find('span').text("비밀번호 일치").css("color", "green");
+            }
+        }
+
         // 필수입력사항체크
         function empty_x(it) {
             if (it.val() == "") {
                 red_input(it);
-                it.parent().find('span').text("필수입력사항 입니다");
+                it.parent().find('span').text("필수입력사항 입니다").css("color", "red");
                 return false;
             } else {
-                green_input(it);
                 it.parent().find('span').text("");
+                if (it.attr('id') == "username" || it.attr('id') == "userid") {
+                    green_input(it);
+                }
                 return true;
             }
         }
+
         // input 빨간 테두리, 배경색
         function red_input(x) {
             $(x).css("border", "3px solid red");
@@ -273,6 +287,7 @@
             $(x).css("background-color", "lightgreen");
             $(x).css("border-radius", "5px / 5px");
         }
+
     </script>
 </body>
 
